@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "Fatura Hesaplama";
+}
+
+<h2>Fatura Hesaplama</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <form id="faturaForm">
+                <div class="form-group">
+                    <label>Fatura Türü:</label>
+                    <select id="faturaTuru" class="form-control">
+                        <option value="Su">Su</option>
+                        <option value="Elektrik">Elektrik</option>
+                        <option value="Doğalgaz">Doğalgaz</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Abone Adı:</label>
+                    <input type="text" id="aboneAdi" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Abone Tipi:</label>
+                    <div class="form-check">
+                        <input type="radio" id="evAbone" name="aboneTipi" value="Ev" class="form-check-input" />
+                        <label class="form-check-label" for="evAbone">Ev</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" id="isyeriAbone" name="aboneTipi" value="Isyeri" class="form-check-input" />
+                        <label class="form-check-label" for="isyeriAbone">İşyeri</label>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label>Son Endeks:</label>
+                    <input type="text" id="sonEndeks" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>İlk Endeks:</label>
+                    <input type="text" id="ilkEndeks" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label>Tüketim Tutarı:</label>
+                    <input type="text" id="tuketimTutari" class="form-control" />
+                </div>
+
+                <button type="button" onclick="hesapla()" class="btn btn-primary">Hesapla</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function hesapla() {
+        var faturaTuru = document.getElementById("faturaTuru").value;
+        var aboneAdi = document.getElementById("aboneAdi").value;
+        var aboneTipiRadio = document.querySelector('input[name="aboneTipi"]:checked');
+        var sonEndeks = parseFloat(document.getElementById("sonEndeks").value);
+        var ilkEndeks = parseFloat(document.getElementById("ilkEndeks").value);
+
+        if (!aboneTipiRadio) {
+            alert("Lütfen abone tipini seçin.");
+            return;
+        }
+
+        var aboneTipi = aboneTipiRadio.value;
+
+        // Tüketim Tutarını Hesapla
+        var tuketimTutari = sonEndeks - ilkEndeks;
+
+        // AJAX kullanarak controller'a post isteği gönder
+        $.ajax({
+            url: "/Fatura/Hesapla",
+            type: "POST",
+            data: {
+                faturaTuru: faturaTuru,
+                aboneTipi: aboneTipi,
+                sonEndeks: sonEndeks,
+                ilkEndeks: ilkEndeks,
+                tuketimTutari: tuketimTutari // Tüketim Tutarını da gönder
+            },
+            success: function (result) {
+                // Hesaplama sonuçları
+                if (result && result.OdemeTutari !== undefined && result.KomisyonTutari !== undefined) {
+                    alert("Abone Adı: " + aboneAdi + "\nÖdeme Tutarı: " + result.OdemeTutari + "\nKomisyon Tutarı: " + result.KomisyonTutari);
+                } else {
+                    alert("Hesaplama sonuçları alınamadı. Lütfen tekrar deneyin.");
+                }
+            },
+            error: function (error) {
+                console.error(error);
+                alert("Hata oluştu. Lütfen tekrar deneyin.");
+            }
+        });
+    }
+   
+
+</script>
+
+
